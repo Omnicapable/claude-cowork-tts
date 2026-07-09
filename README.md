@@ -1,12 +1,13 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Omnicapable Voice for Claude Cowork, local offline text-to-speech" width="880">
+  <img src="assets/banner.png" alt="Omnicapable Voice for Claude Cowork, local offline text-to-speech" width="880"><br>
+  <img src="assets/waveform.gif" alt="Voice waveform" width="480">
 </p>
 
 <div align="center">
 
 # Omnicapable Voice for Claude Cowork
 
-![License](https://img.shields.io/badge/license-MIT-green) ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-green) ![Offline](https://img.shields.io/badge/runs-100%25%20offline-green) ![Free](https://img.shields.io/badge/cost-free-green)
+![Cost Free](https://img.shields.io/badge/Cost-Free-green) ![Runs 100% Offline](https://img.shields.io/badge/Runs-100%25%20Offline-green) ![Platform Windows macOS](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-green) ![License MIT](https://img.shields.io/badge/License-MIT-green)
 
 [Install](#install) · [How it works](#how-it-works) · [Controls](#controls) · [Troubleshooting](#troubleshooting)
 
@@ -40,14 +41,6 @@ This is not a generic text-to-speech add-on. It is built for coding agents:
 
 ---
 
-## Requirements
-
-- Windows 10/11 or macOS 12+
-- Python 3.9+
-- Claude Desktop (Cowork mode) installed
-
----
-
 ## Install
 
 Setup takes just a few clicks and configures everything for you automatically.
@@ -77,6 +70,15 @@ The installer sets up everything for you automatically (one time, downloads ~336
 5. Launches everything immediately
 
 After install, Claude's responses are spoken automatically, with no further setup.
+
+<details>
+<summary><b>Requirements</b></summary>
+
+- Windows 10/11 or macOS 12+
+- Python 3.9+
+- Claude Desktop (Cowork mode) installed
+
+</details>
 
 ---
 
@@ -135,6 +137,10 @@ Ask Claude directly (*"turn voice off"*, *"speak faster"*, *"switch to voice sky
 | Stop current speech | `Ctrl+Alt+X` (Windows) / `Ctrl+Option+X` (macOS) |
 
 Voice and speed scripts live in `%USERPROFILE%\.claude\kokoro\`; the toggle, stop, status, and restart scripts live in `%USERPROFILE%\.claude\`.
+
+<p align="center">
+  <img src="assets/voices.png" alt="The 27 available voices, by accent and gender" width="820">
+</p>
 
 <details>
 <summary><b>All 27 voices and previews</b></summary>
