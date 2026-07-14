@@ -45,7 +45,9 @@ This is not a generic text-to-speech add-on. It is built for coding agents:
 
 Setup takes just a few clicks and configures everything for you automatically.
 
-**Let your agent do it.** Just paste this into Claude:
+**➡️ Let your AI do it.**
+
+Just paste this into Claude:
 
 ```
 Clone https://github.com/Omnicapable/claude-cowork-tts and run the installer for my operating system.
@@ -53,25 +55,25 @@ Clone https://github.com/Omnicapable/claude-cowork-tts and run the installer for
 
 It clones and installs everything for you.
 
+---
+
 **Prefer to do it yourself?**
 
 **1. Get the files.** Open **Terminal** (macOS) or **PowerShell** (Windows) and run:
-```bash
+```
 git clone https://github.com/Omnicapable/claude-cowork-tts
 cd claude-cowork-tts
 ```
-No `git`? On macOS, the first `git` command offers to install Apple's Command Line Tools — accept it. On Windows, install [Git for Windows](https://git-scm.com/download/win), or download the repo as a ZIP (green **Code** button → **Download ZIP**), unzip it, and `cd` into that folder.
+No `git`? On macOS, the first `git` command offers to install Apple's Command Line Tools; accept it. On Windows, install [Git for Windows](https://git-scm.com/download/win), or download the ZIP (green **Code** button → **Download ZIP**), unzip, and `cd` in.
 
 **2. Run the installer for your OS** (from inside that folder):
 
-**macOS** — in Terminal:
-```bash
+**macOS:** in Terminal:
+```
 chmod +x Mac/install_cowork_tts_Mac.sh && ./Mac/install_cowork_tts_Mac.sh
 ```
 
-**Windows** — open the `Windows` folder, right-click `install_cowork_tts_Windows.ps1`, and choose *Run with PowerShell*.
-
-> **Prerequisite:** Python 3.9+ (and macOS 12+ / Windows 10–11). If macOS says `python3: command not found`, install Python via `brew install python` or from [python.org](https://python.org), then re-run step 2.
+**Windows:** in the `Windows` folder, right-click `install_cowork_tts_Windows.ps1` and choose *Run with PowerShell*.
 
 The installer sets up everything for you automatically (one time, downloads ~336 MB of model files):
 1. Installs Python packages (`kokoro-onnx`, `sounddevice`, `numpy`)

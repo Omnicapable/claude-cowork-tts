@@ -4,6 +4,16 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
+## Packaging — July 14, 2026
+
+- **Mac stop hotkey needs no permission now.** The macOS stop hotkey (Ctrl+Option+X) was rewritten from `pynput` to Carbon `RegisterEventHotKey`, which is not gated by Accessibility / Input Monitoring, so there is no first-use permission prompt. The leftover Automator "Stop TTS" service was removed and `pynput` dropped from the Mac dependencies.
+- **Fixed the Mac hotkey failing to start.** On macOS 11+, `ctypes.util.find_library("Carbon")` returns `None` (system frameworks live in the dyld shared cache), so the daemon crashed before registering. It now loads Carbon by absolute path and logs any startup error to `~/.claude/tts_hotkey.log`.
+- **Replay the last answer.** New global hotkey — Ctrl+Alt+R (Windows) / Ctrl+Option+R (macOS) — re-speaks the last reply. The shared server stores the last text and handles a new `__REPLAY__` command.
+- **Audio follows your output device.** The server refreshes the audio device before each utterance, so switching output (e.g. connecting AirPods or headphones) is picked up without restarting the server.
+- **Clearer install docs.** The README manual-install steps now include the full `git clone` + `cd` sequence (with a ZIP fallback), and the Controls list documents stop, replay, speed, voice change, and voice previews.
+
+---
+
 ## Packaging — June 30, 2026
 
 - **Friendly Cowork preview commands.** Installers now write bundled `tts_preview.py`; the Cowork queue watcher routes both friendly queue text (`quick preview voices`, `preview all voices`, `preview voice onyx`) and legacy `__PREVIEW_*` tokens through it. Unknown queue text is logged and ignored instead of spoken.
