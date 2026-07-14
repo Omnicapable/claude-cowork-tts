@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 # =============================================================================
 # install_cowork_tts_Mac.sh  v1.0
 # One-shot installer for Claude Cowork TTS (Kokoro ONNX) — macOS
@@ -1256,8 +1256,11 @@ import time
 from datetime import datetime, timezone
 
 # --- Config ---
-APPDATA        = os.environ.get("APPDATA", os.path.expanduser("~\\AppData\\Roaming"))
-SESSIONS_DIR   = os.path.join(APPDATA, "Claude", "local-agent-mode-sessions")
+if sys.platform == "darwin":
+    SESSIONS_DIR = os.path.expanduser("~/Library/Application Support/Claude/local-agent-mode-sessions")
+else:
+    APPDATA      = os.environ.get("APPDATA", os.path.expanduser("~\\AppData\\Roaming"))
+    SESSIONS_DIR = os.path.join(APPDATA, "Claude", "local-agent-mode-sessions")
 QUEUE_FILE     = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tts_queue.txt")
 TOGGLE_FILE    = os.path.join(os.environ.get("USERPROFILE", os.path.expanduser("~")), ".claude", "tts_enabled.txt")
 PREVIEW_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "preview_voices.py")
@@ -1714,7 +1717,7 @@ done
 SHEOF
 chmod +x "$COWORK_DIR/watchdog.sh"
 
-"" > "$COWORK_DIR/tts_queue.txt"
+: > "$COWORK_DIR/tts_queue.txt"
 
 echo "      Done: $COWORK_DIR"
 

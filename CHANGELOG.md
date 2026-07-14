@@ -11,6 +11,7 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 - **Replay the last answer.** New global hotkey — Ctrl+Alt+R (Windows) / Ctrl+Option+R (macOS) — re-speaks the last reply. The shared server stores the last text and handles a new `__REPLAY__` command.
 - **Audio follows your output device.** The server refreshes the audio device before each utterance, so switching output (e.g. connecting AirPods or headphones) is picked up without restarting the server.
 - **Clearer install docs.** The README manual-install steps now include the full `git clone` + `cd` sequence (with a ZIP fallback), and the Controls list documents stop, replay, speed, voice change, and voice previews.
+- **Mac installer fixes (from a Mac install report).** Removed the UTF-8 BOM that broke `./install_cowork_tts_Mac.sh` (the BOM hid the shebang); fixed an empty-string command (`"" >` → `: >`) that aborted the install under `set -e` right before the final step; and the Cowork session watcher now resolves the macOS app-data path (`~/Library/Application Support/Claude/local-agent-mode-sessions`) instead of a hardcoded Windows path, so it can find Cowork transcripts on Mac.
 
 ---
 
