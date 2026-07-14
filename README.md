@@ -50,7 +50,11 @@ Setup takes just a few clicks and configures everything for you automatically.
 Just paste this into Claude:
 
 ```
-Clone https://github.com/Omnicapable/claude-cowork-tts and run the installer for my operating system.
+Clone https://github.com/Omnicapable/claude-cowork-tts, cd into the folder, and run the installer for my OS:
+- macOS: bash Mac/install_cowork_tts_Mac.sh
+- Windows (PowerShell): Windows/install_cowork_tts_Windows.ps1
+Run it to completion and show me the setup summary it prints at the end.
+If git or Python 3.9+ is missing, tell me how to install it first.
 ```
 
 It clones and installs everything for you.
