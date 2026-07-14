@@ -750,7 +750,9 @@ if ! pgrep -f tts_server.py >/dev/null 2>&1; then
     python3 "\$TTS_SERVER" >/dev/null 2>&1 &
     sleep 2.5
 fi
-# Retry the server; speak directly only as a last resort.
+# Retry the server. Never fall back to direct synthesis (tts_speak.py): it plays
+# through a separate, stop-unaware process that Ctrl+Option+X cannot cancel. If the
+# server still isn't ready, drop this utterance — the server will be up for the next.
 echo "\$TEXT" | python3 -c "
 import sys, socket
 data = sys.stdin.buffer.read()
@@ -758,8 +760,8 @@ try:
     s = socket.socket(); s.settimeout(5)
     s.connect(('127.0.0.1', \$PORT)); s.sendall(data); s.close()
 except Exception:
-    sys.exit(1)
-" 2>/dev/null || echo "\$TEXT" | python3 "\$TTS_SCRIPT"
+    pass
+" 2>/dev/null || true
 SHEOF
 chmod +x "$CLAUDE_DIR/tts_hook.sh"
 

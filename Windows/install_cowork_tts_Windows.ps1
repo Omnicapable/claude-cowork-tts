@@ -725,7 +725,10 @@ if (-not `$text -or `$text.Trim() -eq "") { exit 0 }
 `$sent = `$false
 try {
     `$client = New-Object System.Net.Sockets.TcpClient
-    `$client.Connect("127.0.0.1", `$port)
+    `$ar = `$client.BeginConnect("127.0.0.1", `$port, `$null, `$null)
+    `$ok = `$ar.AsyncWaitHandle.WaitOne(2000)
+    if (-not `$ok) { `$client.Close(); throw "Connect timeout" }
+    `$client.EndConnect(`$ar)
     `$stream = `$client.GetStream()
     `$bytes  = [System.Text.Encoding]::UTF8.GetBytes(`$text)
     `$stream.Write(`$bytes, 0, `$bytes.Length)
@@ -734,8 +737,21 @@ try {
 } catch { `$sent = `$false }
 
 if (-not `$sent) {
+    # Server not running — start it, wait for it to be ready, then retry.
+    # Never fall back to direct synthesis (bypasses the lock and causes overlap).
     Start-Process py -ArgumentList "-3", `$ttsServer -WindowStyle Hidden
-    `$text | py -3 `$ttsScript
+    Start-Sleep -Milliseconds 2500
+    try {
+        `$client = New-Object System.Net.Sockets.TcpClient
+        `$ar = `$client.BeginConnect("127.0.0.1", `$port, `$null, `$null)
+        `$ok = `$ar.AsyncWaitHandle.WaitOne(2000)
+        if (-not `$ok) { `$client.Close(); throw "Connect timeout" }
+        `$client.EndConnect(`$ar)
+        `$stream = `$client.GetStream()
+        `$bytes  = [System.Text.Encoding]::UTF8.GetBytes(`$text)
+        `$stream.Write(`$bytes, 0, `$bytes.Length)
+        `$stream.Close(); `$client.Close()
+    } catch { }
 }
 "@
 
