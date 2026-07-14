@@ -722,37 +722,33 @@ try {
 `$text = `$json.last_assistant_message
 if (-not `$text -or `$text.Trim() -eq "") { exit 0 }
 
-`$sent = `$false
-try {
-    `$client = New-Object System.Net.Sockets.TcpClient
-    `$ar = `$client.BeginConnect("127.0.0.1", `$port, `$null, `$null)
-    `$ok = `$ar.AsyncWaitHandle.WaitOne(2000)
-    if (-not `$ok) { `$client.Close(); throw "Connect timeout" }
-    `$client.EndConnect(`$ar)
-    `$stream = `$client.GetStream()
-    `$bytes  = [System.Text.Encoding]::UTF8.GetBytes(`$text)
-    `$stream.Write(`$bytes, 0, `$bytes.Length)
-    `$stream.Close(); `$client.Close()
-    `$sent = `$true
-} catch { `$sent = `$false }
-
-if (-not `$sent) {
-    # Server not running — start it, wait for it to be ready, then retry.
-    # Never fall back to direct synthesis (bypasses the lock and causes overlap).
-    Start-Process py -ArgumentList "-3", `$ttsServer -WindowStyle Hidden
-    Start-Sleep -Milliseconds 2500
+`$deadline = (Get-Date).AddSeconds(60)
+`$started = `$false
+while ((Get-Date) -lt `$deadline) {
+    `$sent = `$false
     try {
         `$client = New-Object System.Net.Sockets.TcpClient
         `$ar = `$client.BeginConnect("127.0.0.1", `$port, `$null, `$null)
-        `$ok = `$ar.AsyncWaitHandle.WaitOne(2000)
+        `$ok = `$ar.AsyncWaitHandle.WaitOne(3000)
         if (-not `$ok) { `$client.Close(); throw "Connect timeout" }
         `$client.EndConnect(`$ar)
         `$stream = `$client.GetStream()
         `$bytes  = [System.Text.Encoding]::UTF8.GetBytes(`$text)
         `$stream.Write(`$bytes, 0, `$bytes.Length)
         `$stream.Close(); `$client.Close()
-    } catch { }
+        `$sent = `$true
+    } catch { `$sent = `$false }
+    if (`$sent) { exit 0 }
+    # Only the server may produce audio; never synthesise directly (that was a
+    # second, unstoppable voice). Start the server once if it isn't running, then
+    # keep retrying — a short delay is fine, overlapping audio is not.
+    if (-not `$started) {
+        Start-Process py -ArgumentList "-3", `$ttsServer -WindowStyle Hidden
+        `$started = `$true
+    }
+    Start-Sleep -Seconds 1
 }
+exit 0
 "@
 
 Set-Content -Path "$claude\toggle_tts.ps1" -Encoding UTF8 -Value @"

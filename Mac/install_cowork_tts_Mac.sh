@@ -730,38 +730,33 @@ except: pass
 
 if [ -z "\$TEXT" ]; then exit 0; fi
 
-if echo "\$TEXT" | python3 -c "
-import sys, socket, time
-data = sys.stdin.buffer.read()
-for _ in range(3):
-    try:
-        s = socket.socket(); s.settimeout(5)
-        s.connect(('127.0.0.1', \$PORT)); s.sendall(data); s.close()
-        sys.exit(0)
-    except Exception:
-        time.sleep(0.4)
-sys.exit(1)
-" 2>/dev/null; then
-    exit 0
-fi
-
-# Server unreachable after retries. Start one ONLY if none is running (avoids duplicate servers).
-if ! pgrep -f tts_server.py >/dev/null 2>&1; then
-    python3 "\$TTS_SERVER" >/dev/null 2>&1 &
-    sleep 2.5
-fi
-# Retry the server. Never fall back to direct synthesis (tts_speak.py): it plays
-# through a separate, stop-unaware process that Ctrl+Option+X cannot cancel. If the
-# server still isn't ready, drop this utterance — the server will be up for the next.
-echo "\$TEXT" | python3 -c "
+# Only the persistent server may produce audio — it alone understands stop and
+# serialises requests. Never synthesise directly (that was a second, unstoppable
+# voice). If the server is busy or still booting (~10s to load the model), wait and
+# retry for up to ~60s; a short delay is fine, overlapping/unstoppable audio is not.
+i=0
+started=0
+while [ \$i -lt 60 ]; do
+    if echo "\$TEXT" | python3 -c "
 import sys, socket
 data = sys.stdin.buffer.read()
 try:
-    s = socket.socket(); s.settimeout(5)
+    s = socket.socket(); s.settimeout(3)
     s.connect(('127.0.0.1', \$PORT)); s.sendall(data); s.close()
+    sys.exit(0)
 except Exception:
-    pass
-" 2>/dev/null || true
+    sys.exit(1)
+" 2>/dev/null; then
+        exit 0
+    fi
+    if [ \$started -eq 0 ] && ! pgrep -f tts_server.py >/dev/null 2>&1; then
+        python3 "\$TTS_SERVER" >/dev/null 2>&1 &
+        started=1
+    fi
+    sleep 1
+    i=\$((i + 1))
+done
+exit 0
 SHEOF
 chmod +x "$CLAUDE_DIR/tts_hook.sh"
 
