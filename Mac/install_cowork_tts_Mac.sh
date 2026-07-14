@@ -98,14 +98,21 @@ _stop_event  = threading.Event()
 _last_text  = ""      # last text spoken, for __REPLAY__
 _last_voice = None
 
+_last_utterance_ts = 0.0
 def _refresh_audio_device():
-    # sounddevice/PortAudio caches the output device at startup and does NOT
-    # follow when the user switches output (AirPods/headphones/Bluetooth).
-    # Re-initialising PortAudio makes the next playback use the current default.
-    try:
-        sd._terminate(); sd._initialize()
-    except Exception:
-        pass
+    # Follow output-device switches (AirPods/headphones/Bluetooth) WITHOUT tearing
+    # down PortAudio on every utterance — that was fragile (macOS PaMacCore -50).
+    # Only re-scan devices after an idle gap (between bursts, not mid-burst), so a
+    # rapid run of replies doesn't thrash the audio backend.
+    global _last_utterance_ts
+    now = time.time()
+    idle = now - _last_utterance_ts
+    _last_utterance_ts = now
+    if idle > 8.0:
+        try:
+            sd._terminate(); sd._initialize()
+        except Exception:
+            pass
 
 def clean_text(text):
     # --- Tables --- replace markdown tables with a brief label
@@ -724,21 +731,35 @@ except: pass
 if [ -z "\$TEXT" ]; then exit 0; fi
 
 if echo "\$TEXT" | python3 -c "
-import sys, socket
-s = socket.socket()
-s.settimeout(2)
-try:
-    s.connect(('127.0.0.1', \$PORT))
-    s.sendall(sys.stdin.buffer.read())
-    s.close()
-    exit(0)
-except: exit(1)
+import sys, socket, time
+data = sys.stdin.buffer.read()
+for _ in range(3):
+    try:
+        s = socket.socket(); s.settimeout(5)
+        s.connect(('127.0.0.1', \$PORT)); s.sendall(data); s.close()
+        sys.exit(0)
+    except Exception:
+        time.sleep(0.4)
+sys.exit(1)
 " 2>/dev/null; then
     exit 0
 fi
 
-python3 "\$TTS_SERVER" &
-echo "\$TEXT" | python3 "\$TTS_SCRIPT"
+# Server unreachable after retries. Start one ONLY if none is running (avoids duplicate servers).
+if ! pgrep -f tts_server.py >/dev/null 2>&1; then
+    python3 "\$TTS_SERVER" >/dev/null 2>&1 &
+    sleep 2.5
+fi
+# Retry the server; speak directly only as a last resort.
+echo "\$TEXT" | python3 -c "
+import sys, socket
+data = sys.stdin.buffer.read()
+try:
+    s = socket.socket(); s.settimeout(5)
+    s.connect(('127.0.0.1', \$PORT)); s.sendall(data); s.close()
+except Exception:
+    sys.exit(1)
+" 2>/dev/null || echo "\$TEXT" | python3 "\$TTS_SCRIPT"
 SHEOF
 chmod +x "$CLAUDE_DIR/tts_hook.sh"
 
