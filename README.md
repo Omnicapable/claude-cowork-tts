@@ -53,14 +53,25 @@ Clone https://github.com/Omnicapable/claude-cowork-tts and run the installer for
 
 It clones and installs everything for you.
 
-**Prefer to do it yourself?** Clone the repo, then:
+**Prefer to do it yourself?**
 
-**Windows:** right-click `Windows/install_cowork_tts_Windows.ps1` and choose *Run with PowerShell*.
+**1. Get the files.** Open **Terminal** (macOS) or **PowerShell** (Windows) and run:
+```bash
+git clone https://github.com/Omnicapable/claude-cowork-tts
+cd claude-cowork-tts
+```
+No `git`? On macOS, the first `git` command offers to install Apple's Command Line Tools — accept it. On Windows, install [Git for Windows](https://git-scm.com/download/win), or download the repo as a ZIP (green **Code** button → **Download ZIP**), unzip it, and `cd` into that folder.
 
-**macOS:** run in Terminal:
+**2. Run the installer for your OS** (from inside that folder):
+
+**macOS** — in Terminal:
 ```bash
 chmod +x Mac/install_cowork_tts_Mac.sh && ./Mac/install_cowork_tts_Mac.sh
 ```
+
+**Windows** — open the `Windows` folder, right-click `install_cowork_tts_Windows.ps1`, and choose *Run with PowerShell*.
+
+> **Prerequisite:** Python 3.9+ (and macOS 12+ / Windows 10–11). If macOS says `python3: command not found`, install Python via `brew install python` or from [python.org](https://python.org), then re-run step 2.
 
 The installer sets up everything for you automatically (one time, downloads ~336 MB of model files):
 1. Installs Python packages (`kokoro-onnx`, `sounddevice`, `numpy`)
@@ -102,7 +113,7 @@ Both Claude setups feed the same local Voice Engine (Kokoro), differing only in 
 
 <br>
 
-Both share the same controls: 27 voices, adjustable speed (default 1.2x), voice previews, and stop speech with Ctrl+Alt+X on Windows or Ctrl+Option+X on macOS.
+Both share the same controls: 27 voices, adjustable speed (default 1.2x), voice previews, stop speech with Ctrl+Alt+X (Windows) / Ctrl+Option+X (macOS), and replay the last answer with Ctrl+Alt+R / Ctrl+Option+R.
 
 ---
 
@@ -135,6 +146,8 @@ Ask Claude directly (*"turn voice off"*, *"speak faster"*, *"switch to voice sky
 | Turn on or off | `toggle_tts.ps1` (`on` / `off`) |
 | Stop, status, restart | `stop_tts.ps1` · `status_tts.ps1` · `restart_tts.ps1` |
 | Stop current speech | `Ctrl+Alt+X` (Windows) / `Ctrl+Option+X` (macOS) |
+| Replay last answer | `Ctrl+Alt+R` (Windows) / `Ctrl+Option+R` (macOS) |
+| Preview voices | *"quick preview voices"* or *"preview all voices"* |
 
 Voice and speed scripts live in `%USERPROFILE%\.claude\kokoro\`; the toggle, stop, status, and restart scripts live in `%USERPROFILE%\.claude\`.
 
