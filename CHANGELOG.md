@@ -4,7 +4,7 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
-## Packaging — July 14, 2026
+## v4.13 (current)
 
 - **Mac stop hotkey needs no permission now.** The macOS stop hotkey (Ctrl+Option+X) was rewritten from `pynput` to Carbon `RegisterEventHotKey`, which is not gated by Accessibility / Input Monitoring, so there is no first-use permission prompt. The leftover Automator "Stop TTS" service was removed and `pynput` dropped from the Mac dependencies.
 - **Fixed the Mac hotkey failing to start.** On macOS 11+, `ctypes.util.find_library("Carbon")` returns `None` (system frameworks live in the dyld shared cache), so the daemon crashed before registering. It now loads Carbon by absolute path and logs any startup error to `~/.claude/tts_hotkey.log`.
@@ -17,10 +17,11 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 - **Fallback can no longer play unstoppable audio (Mac + Windows).** When the server was briefly unreachable, the Stop hook used to synthesise directly via `tts_speak.py` — a separate process with no socket and no stop handling, so Ctrl+Option+X / Ctrl+Alt+X could not cancel it. The hook now only ever plays through the server (starting it if needed and retrying); if the server still isn't ready it drops that one utterance rather than speaking through an uncontrollable path.
 - **Voice preview: fixed samples playing in the wrong voice.** The preview announced each voice by mutating a shared global (`__VOICE:name__`) and sent the sample as a separate message — but synthesis runs on a background thread, so a fast preview could synthesise a sample *after* the next voice-switch had overwritten the global, playing it in the wrong voice (mismatched label/gender). Each sample now carries its own voice atomically via the per-request `VOICE=name|text` prefix, correct regardless of timing.
 - **Install no longer blocked by Homebrew Python (PEP 668).** On macOS with Homebrew's Python, a global `pip install` is refused (externally-managed environment), which aborted setup at the package step. The installer now retries with `--break-system-packages` when it hits this, so it completes.
+- **Money and large numbers now read correctly.** The `$` cleaner only handled a single digit and the thousands-comma strip only removed one comma per number, so `$50` was spoken "5 dollars zero" and `1,000,000` became "one thousand, zero zero zero". Both now parse the whole value: `$50` → "50 dollars", `$3.50` → "3 dollars and 50 cents", `1,000,000` → "1000000", `$1,234.56` → "1234 dollars and 56 cents". Plain decimals (`3.14`) and percentages were already correct and are unaffected.
 
 ---
 
-## Packaging — June 30, 2026
+## v4.12
 
 - **Friendly Cowork preview commands.** Installers now write bundled `tts_preview.py`; the Cowork queue watcher routes both friendly queue text (`quick preview voices`, `preview all voices`, `preview voice onyx`) and legacy `__PREVIEW_*` tokens through it. Unknown queue text is logged and ignored instead of spoken.
 - **Ctrl+Alt+X now actually ships.** Installers previously advertised the stop hotkey but
@@ -35,7 +36,7 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
-## v4.11 — June 29, 2026 (current)
+## v4.11
 
 - **Age filter field-name fix** — the v4.8 message age filter (`MESSAGE_MAX_AGE_SECONDS = 180`)
   was a silent no-op. It read the timestamp from a field named `ts`, but Claude session
@@ -57,7 +58,7 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
-## v4.10 — June 29, 2026
+## v4.10
 
 - **Per-watcher voice** — `WATCHER_VOICE = None` constant added to `tts_watcher.py`. Set it to
   any Kokoro voice name (e.g. `"am_onyx"`) to give Cowork TTS its own distinct voice, independent
@@ -68,19 +69,19 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
-## v4.9 — June 27, 2026
+## v4.9
 
 - **Single-instance lock** — on startup the watcher binds a UDP socket to `127.0.0.1:59002`. If a second copy starts — e.g. the watchdog and the restart bat fire simultaneously — it cannot bind the port and exits immediately. The OS releases the binding on exit, even on a crash, so no stale lock files. Same implementation on Windows and Mac (`socket` module, already imported).
 
 ---
 
-## v4.8 — June 27, 2026
+## v4.8
 
 - **Message age filter** — messages whose timestamp is older than 3 minutes are silently skipped before being sent to Kokoro. Fixes a replay bug where switching to a recently-touched session file could cause old messages to be spoken aloud.
 
 ---
 
-## v4.7 — June 25, 2026
+## v4.7
 
 - **Scan interval 10s → 5s** — watcher now detects new Cowork sessions within 5 seconds instead of 10; halves worst-case delay when switching between open sessions
 - **Default speed 1.1 → 1.2** — all installers now ship with `SPEED = 1.2`; existing installs unaffected (change live with `set_speed.py`)
@@ -89,13 +90,13 @@ Lightweight public summary. Full detail lives in `Claude Cowork TTS - Changelog.
 
 ---
 
-## v4.6 — June 25, 2026
+## v4.6
 
 - **Poll interval 0.5s → 0.1s** — watcher now checks for new transcript lines every 100ms instead of every 500ms; cuts worst-case delay between response finishing and speech starting from 500ms to 100ms, with negligible CPU cost
 
 ---
 
-## v4.5 — June 25, 2026
+## v4.5
 
 Ported three improvements from the separately-developed Codex TTS system:
 
@@ -105,7 +106,7 @@ Ported three improvements from the separately-developed Codex TTS system:
 
 ---
 
-## v4.4 — June 9, 2026
+## v4.4
 
 - **Replay bug fix** — added `tts_watcher_state.json` to persist per-transcript line positions; re-opening an existing session no longer replays old messages
 - **3-step start decision** — known transcript → resume saved line; fresh file (< 60 s old) → read from start; stale file → skip to end
@@ -114,20 +115,20 @@ Ported three improvements from the separately-developed Codex TTS system:
 
 ---
 
-## v4.3 — April 2026
+## v4.3
 
 - Voice preview lineup reordered and timing improved (8 s gap between voices, up from 6 s)
 - `MAX_CHARS` in `tts_server.py` increased from 3 000 to 5 000 — longer replies now speak in full
 
 ---
 
-## v4.2 — April 2026
+## v4.2
 
 - **Ctrl+Alt+X instant stop** — replaced slow PowerShell shortcut (1–3 s startup overhead) with an in-process `GetAsyncKeyState` polling thread; response time < 100 ms
 
 ---
 
-## v4.1 — April 2026
+## v4.1
 
 - **Windows MAX_PATH fix** — applied `\\?\` extended-length prefix to `SESSIONS_DIR` so `os.walk()` finds JSONL paths over 260 characters
 - **Scan interval** — full directory scan throttled to every 30 s (previously ran on every 0.5 s poll)
