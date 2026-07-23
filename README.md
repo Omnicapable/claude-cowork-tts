@@ -79,7 +79,7 @@ chmod +x Mac/install_cowork_tts_Mac.sh && ./Mac/install_cowork_tts_Mac.sh
 **Windows:** in the `Windows` folder, right-click `install_cowork_tts_Windows.ps1` and choose *Run with PowerShell*.
 
 The installer sets up everything for you automatically (one time, downloads ~336 MB of model files):
-1. Installs Python packages (`kokoro-onnx`, `sounddevice`, `numpy`)
+1. Installs the required Python packages
 2. Downloads the Kokoro ONNX model and voices
 3. Writes the TTS server and watcher scripts
 4. Adds both to auto-start at login
@@ -128,13 +128,10 @@ These are installed automatically by the installer. They are included here for r
 
 | File | Purpose |
 | --- | --- |
-| `tts_watcher.py` | Main watcher loop. Monitors the Cowork sessions directory, speaks each completed assistant message, and handles special queue commands. v4.9 |
+| `tts_watcher.py` | Main watcher loop. Monitors the Cowork sessions directory, speaks each completed assistant message, and handles special queue commands. v4.14 |
 | `watchdog.ps1` | Keeps `tts_watcher.py` and the Kokoro server alive, restarting whichever stops responding. Heartbeat to `%LOCALAPPDATA%\tts\watchdog.log` every 5 minutes. v3 |
 | `preview_voices.py` | Source voice demo helper. The installed watcher routes queue previews through the installed `%USERPROFILE%\.claude\kokoro\tts_preview.py`; this source helper is only a fallback or demo script. |
 | `seed_state.py` | One-off migration helper. Pre-populates `tts_watcher_state.json` with the current line counts of every existing transcript, so the first run does not replay old sessions. Safe to re-run. |
-| `panel.html` | The control panel UI - served by the server on 127.0.0.1:59010 |
-| `panel_app.py` | Optional native desktop window for the panel (needs `pywebview`) |
-| `logo.svg` | Omnicapable mark shown in the panel header |
 
 The installer also writes these runtime files to the install directory:
 - `tts_watcher_state.json`, an auto-managed position tracker (never edit by hand); entries older than 7 days are pruned automatically.
@@ -143,40 +140,6 @@ The installer also writes these runtime files to the install directory:
 
 ---
 
-## Control panel
-
-A small desktop panel for the things you previously had to script: voice, speed,
-volume, replay, stop, and previews. It ships with every Omnicapable Voice repo, so
-whichever one you install you get the same panel.
-
-<p align="center">
-  <b>Open it:</b> Start Menu &rarr; <i>Omnicapable Voice Panel</i> &nbsp; - &nbsp;
-  <code>%USERPROFILE%\.claude\Open-Panel.bat</code> (Windows) &nbsp; - &nbsp;
-  <code>~/.claude/open_panel.sh</code> (macOS)
-</p>
-
-| Control | What it does |
-| --- | --- |
-| Speed dial (top arc) | 0.80x to 2.00x in 0.01 steps |
-| Volume dial (bottom arc) | TTS-only volume - does not touch your system mixer |
-| Voice picker | All 27 voices by friendly name, with **Preview**, **Preview all**, and **Set** |
-| Arrows (`<` `>`) | Step through voices and hear each one; nothing changes until you press **Set** |
-| Replay / Stop | Repeat the last reply - cut off speech instantly |
-| Power switch | Mute or unmute every TTS system at once |
-| Speak box | Type or paste text to have it read aloud |
-
-The panel runs entirely on your machine: the server serves it on `127.0.0.1:59010`,
-bound to loopback only. Nothing is uploaded, and it works with no internet connection.
-
-**Optional native window.** By default the panel opens in a chromeless browser
-window. Install `pywebview` (`pip install pywebview`) and it opens as a proper
-desktop mini-app instead, with no browser chrome at all. Add `--top` (or use
-`Open-Panel-Pinned.bat` / `open_panel.sh --pinned`) to keep it floating above your
-other windows.
-
-**Accessibility.** Every control is keyboard reachable: Tab to the dials and use
-the arrow keys, Page Up/Down, Home/End; the voice list is a proper listbox with
-arrow-key navigation; screen readers announce values such as "1.35 times".
 
 ## Controls
 Ask Claude directly (*"turn voice off"*, *"speak faster"*, *"switch to voice sky"*), or run the scripts yourself.
